@@ -21,8 +21,8 @@ public:
   QTimer _timer;
   QBLCanvas _canvas;
   QComboBox _rendererSelect;
+  QComboBox _operationSelect;
   QCheckBox _limitFpsCheck;
-  QSlider _slider;
   QPointF _mousePt;
   OperationType _operationType = Intersection;
 
@@ -38,23 +38,24 @@ public:
     QBLCanvas::initRendererSelectBox(&_rendererSelect);
     _limitFpsCheck.setText(QLatin1String("Limit FPS"));
 
-    _slider.setOrientation(Qt::Horizontal);
-    _slider.setMinimum(50);
-    _slider.setMaximum(20000);
-    _slider.setSliderPosition(1000);
+    _operationSelect.addItem("Union", QVariant(int(Union)));
+    _operationSelect.addItem("Intersection", QVariant(int(Intersection)));
+    _operationSelect.addItem("Difference", QVariant(int(Difference)));
+    _operationSelect.addItem("Symmetric Difference", QVariant(int(SymmetricDifference)));
+    _operationSelect.setCurrentIndex(_operationSelect.findData(int(_operationType)));
 
     connect(&_rendererSelect, SIGNAL(currentIndexChanged(int)), SLOT(onRendererChanged(int)));
     connect(&_limitFpsCheck, SIGNAL(stateChanged(int)), SLOT(onLimitFpsChanged(int)));
-    connect(&_slider, SIGNAL(valueChanged(int)), SLOT(onZoomChanged(int)));
+    connect(&_operationSelect, SIGNAL(currentIndexChanged(int)), SLOT(onOperationChanged(int)));
 
     grid->addWidget(new QLabel("Renderer:"), 0, 0, Qt::AlignRight);
     grid->addWidget(&_rendererSelect, 0, 1);
 
+    grid->addWidget(new QLabel("Operation:"), 0, 2, Qt::AlignRight);
+    grid->addWidget(&_operationSelect, 0, 3);
+
     grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding), 0, 4);
     grid->addWidget(&_limitFpsCheck, 0, 5);
-
-    grid->addWidget(new QLabel("Zoom:"), 1, 0, Qt::AlignRight);
-    grid->addWidget(&_slider, 1, 1, 1, 5);
 
     _canvas.onRenderB2D = std::bind(&MainWindow::onRenderB2D, this, std::placeholders::_1);
     _canvas.onRenderQt = std::bind(&MainWindow::onRenderQt, this, std::placeholders::_1);
@@ -77,6 +78,7 @@ public:
   }
 
   Q_SLOT void onRendererChanged(int index) { _canvas.setRendererType(_rendererSelect.itemData(index).toInt()); }
+  Q_SLOT void onOperationChanged(int index) { _operationType = (OperationType)_operationSelect.itemData(index).toInt(); }
   Q_SLOT void onLimitFpsChanged(int value) { _timer.setInterval(value ? 1000 / 120 : 0); }
   Q_SLOT void onToggleRenderer() { _rendererSelect.setCurrentIndex(_rendererSelect.currentIndex() ^ 1); }
 
@@ -226,6 +228,36 @@ public:
           polygon << rect.bottomLeft();
           polygon << rect.topLeft();
           polygons.push_back(polygon);
+      }
+
+      for (int i = 0; i < 4; ++i)
+      {
+          QPointF center(w4 * i + w4 * 0.5, h4 * 2.5);
+          QRectF rect(0.0, 0.0, w4 * (0.8 - i * 0.07), h4 * (0.8 - i * 0.07));
+          rect.moveCenter(center);
+
+          QPainterPath path;
+          path.addEllipse(rect);
+          polygons.push_back(path.toFillPolygon());
+      }
+
+      for (int i = 0; i < 4; ++i)
+      {
+          QPointF center(w4 * i + w4 * 0.5, h4 * 3.5);
+          QRectF rect(0.0, 0.0, w4 * (0.8 - i * 0.07), h4 * (0.8 - i * 0.07));
+          rect.moveCenter(center);
+
+          QPainterPath path;
+          path.addEllipse(rect);
+          polygons.push_back(path.toFillPolygon());
+
+          rect.setWidth(rect.width() * 0.8);
+          rect.setHeight(rect.height() * 0.8);
+          rect.moveCenter(center);
+
+          path.clear();
+          path.addEllipse(rect);
+          polygons.push_back(path.toFillPolygon());
       }
 
       return polygons;
