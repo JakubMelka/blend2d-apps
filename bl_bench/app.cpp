@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <type_traits>
+#include <limits>
+#include <cstdlib>
 
 #include "./app.h"
 #include "./images_data.h"

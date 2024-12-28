@@ -9,7 +9,7 @@ include(FindPkgConfig)
 
 set(BLEND2D_APPS_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "blend2d-apps directory")
 
-# Dependencies - Blend2D (Requred)
+# Dependencies - Blend2D (Required)
 # ================================
 
 set(BLEND2D_DIR "${BLEND2D_APPS_DIR}/../blend2d" CACHE PATH "Location of 'blend2d'")
@@ -265,6 +265,7 @@ set(BLEND2D_DEMOS
   bl_qt_rects
   bl_qt_sprites
   bl_qt_tiger
+  bl_qt_polygon_clipper
 )
 
 if(Qt6Gui_FOUND)
